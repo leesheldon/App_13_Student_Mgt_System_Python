@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QApplication, QLabel, QWidget, QGridLayout, \
     QLineEdit, QPushButton, QMainWindow, QTableWidget, QTableWidgetItem, \
-    QDialog, QVBoxLayout, QComboBox, QToolBar, QStatusBar
+    QDialog, QVBoxLayout, QComboBox, QToolBar, QStatusBar, QMessageBox
 from PyQt6.QtGui import QAction, QIcon
 import sys
 import sqlite3
@@ -240,7 +240,48 @@ class EditDialog(QDialog):
 class DeleteDialog(QDialog):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Edit student")
+        self.setWindowTitle("Delete student data")
+
+        layout = QGridLayout()
+        confirm_message = QLabel("Are you sure you want to delete?")
+        yes_button = QPushButton("Yes")
+        no_button = QPushButton("No")
+
+        layout.addWidget(confirm_message, 0, 0, 1, 2)
+        layout.addWidget(yes_button, 1, 0)
+        layout.addWidget(no_button, 1, 1)
+        self.setLayout(layout)
+
+        yes_button.clicked.connect(self.delete_student)
+        no_button.clicked.connect(self.not_delete_student)
+
+    def delete_student(self):
+        index = student_mgt_app.table.currentRow()
+        student_id = student_mgt_app.table.item(index, 0).text()
+
+        connection = sqlite3.connect("database.db")
+        cursor = connection.cursor()
+        cursor.execute("DELETE from students WHERE id = ?",
+                       (student_id, ))
+
+        connection.commit()
+        cursor.close()
+        connection.close()
+
+        # Refresh the table
+        student_mgt_app.load_data()
+
+        # Close Delete confirmation dialog
+        self.close()
+
+        confirmation_widget = QMessageBox()
+        confirmation_widget.setWindowTitle("Success")
+        confirmation_widget.setText("The record has been deleted successfully!")
+        confirmation_widget.exec()
+
+    def not_delete_student(self):
+        # Close Delete confirmation dialog
+        self.close()
 
 
 app = QApplication(sys.argv)
@@ -248,4 +289,66 @@ student_mgt_app = MainWindow()
 student_mgt_app.show()
 student_mgt_app.load_data()
 sys.exit(app.exec())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
